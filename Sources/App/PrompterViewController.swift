@@ -16,7 +16,6 @@ final class PrompterViewController: UIViewController {
     /// 拖拽热区。1pt 的线按不准，给它一条 44pt 高的透明抓手（Apple 的最小触控尺寸）。
     private let guideGrip = UIView()
     private let frameGuide = UIView()
-    private let buddy = UIImageView()
     private let heardLabel = UILabel()
     private let badge = Badge()
     private let recPill = UIView()
@@ -35,12 +34,17 @@ final class PrompterViewController: UIViewController {
     /// 语速标记在显示串里占的区间。着色时要跳过，否则它们的黑字被染灰。
     private var paceRanges: [NSRange] = []
     private var bar = UIStackView()
+    private var actionRow = UIStackView()
+    private let controlBackdrop = UIView()
+    private let controlGradient = CAGradientLayer()
     private var buttons: [HUDButton] = []
     private var settingsSheet: RecordingSettingsSheet?
     /// 返回键：导航动作，独立放左上角，不混在念稿操作里。
     private let backButton = HUDButton("‹ 返回")
-    /// 录制键：独立放底部正中，拇指最好按，也是相机类 App 的通用位置。
-    private let recordButton = HUDButton("● 录制")
+    /// 唯一的录制状态入口：开始录制后才进入暂停/继续跟读状态。
+    private let recordButton = HUDButton("开始录制")
+    /// 浮窗是配系统相机使用时最重要的出口，固定在底部正中。
+    private let pipButton = HUDButton("浮窗")
     private var cfg = SetupViewController.Config()
 
     private var script = ""
@@ -69,6 +73,10 @@ final class PrompterViewController: UIViewController {
     /// 当前行停在屏幕高度的这个比例处。用户可调（设置页「提词位置」）——
     /// 手机架多高、视线角度多少每次都不一样，固定 40% 不够用。
     private var ANCHOR_RATIO: CGFloat { CGFloat(cfg.promptTop) / 100 }
+
+    private func recordingIcon(_ name: String, fallback: UIImage) -> UIImage {
+        UIImage(named: name) ?? fallback
+    }
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -110,6 +118,7 @@ final class PrompterViewController: UIViewController {
         camera.onRecordFinished = { [weak self] url, err in
             guard let self else { return }
             self.recPill.isHidden = true
+            self.updateRecordingControl()
             guard let url else { self.toast("录制失败：\(err?.localizedDescription ?? "未知")"); return }
             self.camera.saveToPhotos(url) { ok in
                 self.toast(ok ? "已存入相册" : "存相册失败（检查相册权限）")
@@ -130,8 +139,8 @@ final class PrompterViewController: UIViewController {
             self.badge.set(active ? "浮窗已开 · 可切系统相机"
                                   : (self.running ? "跟读中" : "待机"),
                            live: active || self.running)
-            self.button(for: "浮窗")?.setTitle(active ? "收浮窗" : "浮窗", for: .normal)
-            self.button(for: "浮窗")?.apply(active ? .active : .normal)
+            self.pipButton.setTitle(active ? "收起浮窗" : "浮窗", for: .normal)
+            self.pipButton.apply(active ? .active : .normal)
         }
         // 系统相机一开始录制就会抢音频会话，把我们的后台保活打断。
         // 恢复是自动的（见 KeepAlive），这里只是让用户知道发生了什么。
@@ -144,6 +153,9 @@ final class PrompterViewController: UIViewController {
             guard let self, self.pip.isActive else { return }
             self.badge.set(began ? "音频被占用 · 恢复中" : "浮窗已开 · 可切系统相机",
                            live: !began)
+        }
+        pip.onPlaybackPausedChange = { [weak self] isPaused in
+            self?.setPaused(isPaused)
         }
     }
 
@@ -206,14 +218,6 @@ final class PrompterViewController: UIViewController {
         frameGuide.isHidden = true
         view.addSubview(frameGuide)
 
-        buddy.image = UIImage(named: "BuddyIcon")
-        buddy.contentMode = .scaleAspectFit
-        buddy.alpha = 0.85
-        // 必须在正文之上，否则被文字盖住看不见
-        buddy.layer.zPosition = 10
-        buddy.isUserInteractionEnabled = false
-        view.addSubview(buddy)
-
         let tap = UITapGestureRecognizer(target: self, action: #selector(tapText(_:)))
         textView.addGestureRecognizer(tap)
     }
@@ -224,11 +228,14 @@ final class PrompterViewController: UIViewController {
         // 录制指示：红色胶囊 + 闪烁圆点 + 计时
         recPill.backgroundColor = DS.danger.withAlphaComponent(0.94)
         recPill.layer.cornerRadius = 11
+        recPill.isUserInteractionEnabled = true
+        recPill.accessibilityLabel = "录制中，点此结束并保存"
+        recPill.accessibilityHint = "双击结束视频录制"
         recPill.isHidden = true
         let dot = UIView()
         dot.backgroundColor = .white
         dot.layer.cornerRadius = 3.5
-        recTime.text = "00:00"
+        recTime.text = "录制中 · 点此结束"
         recTime.font = .monospacedDigitSystemFont(
             ofSize: UIFont.preferredFont(forTextStyle: .caption1).pointSize, weight: .semibold)
         recTime.textColor = .white
@@ -253,6 +260,8 @@ final class PrompterViewController: UIViewController {
         blink.autoreverses = true
         blink.repeatCount = .infinity
         dot.layer.add(blink, forKey: "blink")
+        recPill.addGestureRecognizer(
+            UITapGestureRecognizer(target: self, action: #selector(stopRecording)))
 
         // 顶部细进度条：绿色高亮说明"念到哪个字"，进度条说明"整篇走了多少"
         progressTrack.backgroundColor = UIColor(hex: 0x232936, alpha: 0.9)
@@ -278,50 +287,49 @@ final class PrompterViewController: UIViewController {
     }
 
     private func setupBar() {
-        // 常用调整集中在录制键上方；每个图标都配文字，不能让用户猜用途。
-        let topSpecs: [(String, String, Selector)] = [
-            ("文字", "textformat.size", #selector(showTextSettings)),
-            ("透明", "circle.lefthalf.filled", #selector(showTextSettings)),
-            ("镜像", "rectangle.lefthalf.filled", #selector(toggleMirror)),
-            ("位置", "arrow.up.and.down", #selector(focusGuideLine)),
-            ("相机", "camera.rotate", #selector(flipCam)),
-            ("浮窗", "pip", #selector(togglePiP)),
+        controlBackdrop.isUserInteractionEnabled = false
+        controlGradient.colors = [UIColor.clear.cgColor,
+                                  UIColor.black.withAlphaComponent(0.56).cgColor,
+                                  UIColor.black.withAlphaComponent(0.88).cgColor]
+        controlGradient.locations = [0, 0.28, 1]
+        controlBackdrop.layer.addSublayer(controlGradient)
+        view.addSubview(controlBackdrop)
+
+        // 常用工具集中在主按钮上方；图标与名称一起出现，避免靠猜。
+        let topSpecs: [(String, UIImage, Selector)] = [
+            ("文字", recordingIcon("RecordingTextIcon", fallback: DreamIcon.textControls), #selector(showTextSettings)),
+            ("左右翻转", recordingIcon("RecordingMirrorHorizontalIcon", fallback: DreamIcon.mirrorHorizontal), #selector(toggleHorizontalMirror)),
+            ("上下翻转", recordingIcon("RecordingMirrorVerticalIcon", fallback: DreamIcon.mirrorVertical), #selector(toggleVerticalMirror)),
+            ("镜头翻转", recordingIcon("RecordingFlipCameraIcon", fallback: DreamIcon.flipCamera), #selector(flipCam)),
         ]
-        let mainSpecs: [(String, Selector)] = [
-            ("↑ 上一句", #selector(prevLine)),
-            ("暂停", #selector(togglePause)),
-            ("↓ 下一句", #selector(nextLine)),
+        let navigationSpecs: [(String, UIImage, Selector)] = [
+            ("上一句", recordingIcon("RecordingPreviousIcon", fallback: DreamIcon.navigation(forward: false)), #selector(prevLine)),
+            ("下一句", recordingIcon("RecordingNextIcon", fallback: DreamIcon.navigation(forward: true)), #selector(nextLine)),
         ]
-        buttons = topSpecs.map { title, symbol, sel in
+        buttons = topSpecs.map { title, icon, sel in
             let b = HUDButton(title)
-            b.setImage(UIImage(systemName: symbol), for: .normal)
-            b.tintColor = UIColor.white.withAlphaComponent(0.9)
+            b.setImage(icon, for: .normal)
             b.accessibilityIdentifier = "hud." + title
             b.addTarget(self, action: sel, for: .touchUpInside)
             return b
         }
-        buttons += mainSpecs.map { title, sel in
+        let navigationButtons = navigationSpecs.map { title, icon, sel in
             let b = HUDButton(title)
+            b.setImage(icon, for: .normal)
             b.accessibilityIdentifier = "hud." + title
             b.addTarget(self, action: sel, for: .touchUpInside)
             return b
         }
+        buttons += navigationButtons
         // 轻点相机翻转前后镜头；长按切换到“只做浮窗”模式，仍可配系统相机录制。
-        button(for: "相机")?.addGestureRecognizer(
+        button(for: "镜头翻转")?.addGestureRecognizer(
             UILongPressGestureRecognizer(target: self, action: #selector(handleLongPress(_:))))
         let topRow = UIStackView(arrangedSubviews: Array(buttons.prefix(topSpecs.count)))
         topRow.spacing = 6
         topRow.distribution = .fillEqually
         topRow.heightAnchor.constraint(equalToConstant: 52).isActive = true
 
-        let mainRow = UIStackView(arrangedSubviews: Array(buttons.suffix(mainSpecs.count)))
-        mainRow.spacing = 6
-        mainRow.distribution = .fillEqually
-        mainRow.heightAnchor.constraint(equalToConstant: 34).isActive = true
-
-        bar = UIStackView(arrangedSubviews: [topRow, mainRow])
-        bar.axis = .vertical
-        bar.spacing = 6
+        bar = topRow
         view.addSubview(bar)
 
         // 返回：左上角。accessibilityIdentifier 沿用 "hud." 前缀，
@@ -330,10 +338,20 @@ final class PrompterViewController: UIViewController {
         backButton.addTarget(self, action: #selector(showEditor), for: .touchUpInside)
         view.addSubview(backButton)
 
-        // 录制：底部正中，比其他按钮大一圈，是这屏的主操作。
-        recordButton.accessibilityIdentifier = "hud.● 录制"
-        recordButton.addTarget(self, action: #selector(toggleRec), for: .touchUpInside)
-        view.addSubview(recordButton)
+        // 底部主按钮负责单一状态流：开始录制后才显示暂停/继续。
+        recordButton.accessibilityIdentifier = "hud.跟读控制"
+        recordButton.setImage(recordingIcon("RecordingRecordIcon", fallback: DreamIcon.record), for: .normal)
+        recordButton.addTarget(self, action: #selector(toggleRecordingControl), for: .touchUpInside)
+
+        actionRow = UIStackView(arrangedSubviews: [navigationButtons[0], recordButton, navigationButtons[1]])
+        actionRow.spacing = 8
+        actionRow.distribution = .fillEqually
+        view.addSubview(actionRow)
+
+        pipButton.accessibilityIdentifier = "hud.浮窗"
+        pipButton.setImage(recordingIcon("RecordingFloatingIcon", fallback: DreamIcon.floatingWindow), for: .normal)
+        pipButton.addTarget(self, action: #selector(togglePiP), for: .touchUpInside)
+        view.addSubview(pipButton)
     }
 
     override func viewDidLayoutSubviews() {
@@ -352,10 +370,6 @@ final class PrompterViewController: UIViewController {
         guideHandle.frame = CGRect(x: view.bounds.width - 34, y: guideY - 9, width: 5, height: 19)
         // 抓手横跨右侧一段、纵向 44pt，手指好按又不挡住左边的字
         guideGrip.frame = CGRect(x: view.bounds.width - 76, y: guideY - 22, width: 76, height: 44)
-        // 兔子图是 120x140（竖向），正方形 frame 会把它压扁
-        let rabbitW: CGFloat = 46, rabbitH = rabbitW * 140 / 120
-        buddy.frame = CGRect(x: view.bounds.midX - rabbitW / 2, y: safe.top + 28,
-                             width: rabbitW, height: rabbitH)
         // 徽章按内容自适应宽度，靠右
         let bw = min(view.bounds.width * 0.62, badge.systemLayoutSizeFitting(
             UIView.layoutFittingCompressedSize).width)
@@ -381,17 +395,24 @@ final class PrompterViewController: UIViewController {
             recPill.frame = CGRect(x: 12 + backW + 8, y: safe.top + 8, width: rw, height: 22)
         }
 
-        // 录制键：底部正中，比其他按钮大一圈——这屏的主操作。
-        let recW: CGFloat = 116, recH: CGFloat = 52
-        recordButton.frame = CGRect(x: view.bounds.midX - recW / 2,
-                                    y: view.bounds.height - safe.bottom - recH - 12,
-                                    width: recW, height: recH)
-        recordButton.layer.cornerRadius = recH / 2
+        // 最底部是浮窗；上一句、录制/暂停、下一句位于它正上方同一行。
+        let pipW: CGFloat = 116, pipH: CGFloat = 52
+        pipButton.frame = CGRect(x: view.bounds.midX - pipW / 2,
+                                 y: view.bounds.height - safe.bottom - pipH - 12,
+                                 width: pipW, height: pipH)
+        pipButton.layer.cornerRadius = pipH / 2
+        let actionH: CGFloat = 56
+        actionRow.frame = CGRect(x: 12, y: pipButton.frame.minY - actionH - 8,
+                                 width: view.bounds.width - 24, height: actionH)
 
-        // 两行 HUD 全部坐在录制键上方，顶部不放任何工具。
-        let barH: CGFloat = 92
-        bar.frame = CGRect(x: 12, y: recordButton.frame.minY - barH - 10,
+        // 工具栏位于录制控制上方，顶部不放会遮镜头的操作。
+        let barH: CGFloat = 52
+        bar.frame = CGRect(x: 12, y: actionRow.frame.minY - barH - 10,
                            width: view.bounds.width - 24, height: barH)
+        controlBackdrop.frame = CGRect(x: 0, y: bar.frame.minY - 28,
+                                       width: view.bounds.width,
+                                       height: view.bounds.height - bar.frame.minY + 28)
+        controlGradient.frame = controlBackdrop.bounds
         // 识别回显放在 HUD 上方，别被两行按钮压住
         heardLabel.frame = CGRect(x: 20, y: bar.frame.minY - 18,
                                   width: view.bounds.width - 40, height: 14)
@@ -433,9 +454,6 @@ final class PrompterViewController: UIViewController {
         // 始终 resizeAspectFill：铺满屏幕、裁掉边缘。
         previewLayer.videoGravity = .resizeAspectFill
         view.setNeedsLayout()
-        // 陪读形象默认关：它占 86pt（屏高 10%）把正文往下推，
-        // 对「念到哪」没有帮助。想要的人可在设置里打开。
-        buddy.isHidden = !c.buddyOn
         textView.alpha = CGFloat(c.textOpacity) / 100
 
         // 镜像用 transform 组合，两个方向可同时开
@@ -451,24 +469,20 @@ final class PrompterViewController: UIViewController {
         renderScript()
         let sec = estimateDuration(lines)
         badge.set(lines.isEmpty ? "待机" : "约 \(formatDuration(sec))", live: false)
-        UIApplication.shared.isIdleTimerDisabled = c.keepAwake
     }
 
     /// 渲染稿子。气口按强度撑间距，语速标记加色块。
     private func renderScript() {
         let attr = NSMutableAttributedString()
         let chars = Array(script)
-        var breathAt: [Int: Breath] = [:]
         var paceAt: [Int: Pace] = [:]
         for ln in lines {
-            breathAt[ln.end] = ln.breath
             if ln.pace != .normal { paceAt[ln.start] = ln.pace }
         }
         let para = NSMutableParagraphStyle()
         // 行距按倍数换算成额外间距
         para.lineSpacing = CGFloat(cfg.fontSize) * (CGFloat(cfg.lineSpacing) / 100 - 1)
-        // 段间距略大于行距，句子边界更清楚
-        para.paragraphSpacing = CGFloat(cfg.fontSize) * 0.35
+        para.paragraphSpacing = 0
         let font = UIFont.systemFont(ofSize: CGFloat(cfg.fontSize), weight: .semibold)
 
         charToVisual = []
@@ -495,13 +509,6 @@ final class PrompterViewController: UIViewController {
             attr.append(NSAttributedString(string: String(chars[i]),
                                            attributes: [.font: font,
                                                         .paragraphStyle: para]))
-            if let b = breathAt[i + 1] {
-                // 长气口换行，短气口给点空隙 —— 让"哪里换气"看得见
-                let gap = b == .long ? "\n" : (b == .medium ? "  " : " ")
-                attr.append(NSAttributedString(string: gap,
-                                               attributes: [.font: font,
-                                                            .paragraphStyle: para]))
-            }
         }
         charToVisual.append(attr.length)   // 末位 = 全文末尾
         textView.attributedText = attr
@@ -689,7 +696,7 @@ final class PrompterViewController: UIViewController {
             guard let self else { return }
             guard ok else { self.toast("需要麦克风和语音识别权限"); return }
             // 语音识别独占麦克风，所以相机这边先不接音频，
-            // 录制时再切进来（见 toggleRec）。
+            // 录制时再切进来（见 toggleRecordingControl）。
             if self.camEnabled {
                 self.camera.configure(useMic: false)
                 self.camera.start()
@@ -699,11 +706,10 @@ final class PrompterViewController: UIViewController {
             self.startTicker()
             self.lastTickTime = 0
             self.autoScrollAccum = 0
-            self.paused = false
+            self.setPaused(false)
             self.badge.set(self.cfg.scrollMode == .voice ? "跟读中" : "滚动中", live: true)
             self.scheduleHUDHide()
-            self.button(for: "暂停")?.setTitle("暂停", for: .normal)
-            self.button(for: "暂停")?.apply(.normal)
+            self.updateRecordingControl()
             UIApplication.shared.isIdleTimerDisabled = true
         }
     }
@@ -712,24 +718,31 @@ final class PrompterViewController: UIViewController {
         countdownLabel?.removeFromSuperview()
         countdownLabel = nil
         running = false
+        pip.setPlaybackPaused(false)
         paused = false
         speech.stop()
         stopTicker()
         badge.set("待机", live: false)
-        button(for: "暂停")?.setTitle("开始", for: .normal)
-        button(for: "暂停")?.apply(.normal)
+        updateRecordingControl()
         UIApplication.shared.isIdleTimerDisabled = false
     }
 
-    @objc private func toggleRec() {
+    @objc private func toggleRecordingControl() {
         scheduleHUDHide()
         if camera.isRecording {
-            camera.stopRecording()
-            recordButton.setTitle("● 录制", for: .normal)
-            recordButton.apply(.normal)
+            togglePause()
+        } else if countdownLabel != nil {
+            cancelCountdown()
         } else {
             startRecordingFlow()
         }
+    }
+
+    @objc private func stopRecording() {
+        guard camera.isRecording else { return }
+        camera.stopRecording()
+        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+        scheduleHUDHide()
     }
 
     @objc private func togglePiP() {
@@ -825,15 +838,13 @@ final class PrompterViewController: UIViewController {
             guard let self else { return }
             self.camera.startRecording()
             self.recPill.isHidden = false
-            self.recordButton.setTitle("■ 停止", for: .normal)
-            self.recordButton.apply(.danger)
+            self.updateRecordingControl()
             // 跟读继续跑。若之前没在跟读，录制时顺便起来 —— 用户按下录制
             // 就是要开始念了，不该再多点一次「开始」。
             if !self.running {
                 self.beginRun()
             } else if self.paused {
-                self.paused = false
-                self.speech.resume()
+                self.setPaused(false)
             }
             self.badge.set("录制中 · 跟读中", live: true)
         }
@@ -923,22 +934,25 @@ final class PrompterViewController: UIViewController {
         sheet.show()
     }
 
-    @objc private func toggleMirror() {
+    @objc private func toggleHorizontalMirror() {
         cfg.mirrorX.toggle()
-        textView.transform = cfg.mirrorX
-            ? CGAffineTransform(scaleX: -1, y: cfg.mirrorY ? -1 : 1)
-            : CGAffineTransform(scaleX: 1, y: cfg.mirrorY ? -1 : 1)
-        toast(cfg.mirrorX ? "已左右镜像" : "已关闭镜像")
+        applyMirroring()
+        toast(cfg.mirrorX ? "已左右镜像" : "已关闭左右镜像")
         scheduleHUDHide()
     }
 
-    @objc private func focusGuideLine() {
-        guideLine.backgroundColor = DS.pinkBright.withAlphaComponent(0.8)
-        toast("拖动粉紫提词线调整位置")
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { [weak self] in
-            self?.guideLine.backgroundColor = DS.pinkBright.withAlphaComponent(0.22)
-        }
+    @objc private func toggleVerticalMirror() {
+        cfg.mirrorY.toggle()
+        applyMirroring()
+        toast(cfg.mirrorY ? "已上下镜像" : "已关闭上下镜像")
         scheduleHUDHide()
+    }
+
+    private func applyMirroring() {
+        var transform = CGAffineTransform.identity
+        if cfg.mirrorX { transform = transform.scaledBy(x: -1, y: 1) }
+        if cfg.mirrorY { transform = transform.scaledBy(x: 1, y: -1) }
+        textView.transform = transform
     }
 
     @objc private func showMoreActions() {
@@ -1050,11 +1064,12 @@ final class PrompterViewController: UIViewController {
             // 不再整条隐藏。用户反馈「没有返回键也没有录制键」——
             // 其实都在，但淡到 0 就等于功能消失，而且没有任何提示。
             // 现在最低降到 0.5：念稿时不抢注意力，但随时看得见、点得到。
-            self.bar.alpha = show ? 1 : 0.5
+            self.bar.alpha = show ? 1 : 0.92
             // 返回和录制已抽成独立按钮，得一起淡——否则念稿时它们始终全亮，
             // 反而比之前更抢注意力。
             self.backButton.alpha = show ? 1 : 0.5
-            self.recordButton.alpha = show ? 1 : 0.5
+            self.actionRow.alpha = show ? 1 : 0.92
+            self.pipButton.alpha = show ? 1 : 0.92
             self.heardLabel.alpha = show ? 1 : 0
         }
     }
@@ -1064,20 +1079,41 @@ final class PrompterViewController: UIViewController {
     /// 现在只冻结位置更新，麦克风和识别任务都留着，继续时无缝衔接。
     @objc private func togglePause() {
         guard running else { startRun(); return }
-        paused.toggle()
+        setPaused(!paused)
+        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+        scheduleHUDHide()
+    }
+
+    private func setPaused(_ shouldPause: Bool) {
+        guard paused != shouldPause else { return }
+        paused = shouldPause
+        pip.setPlaybackPaused(shouldPause)
         if paused {
             speech.pause()
             badge.set("已暂停", live: false)
-            button(for: "暂停")?.setTitle("继续", for: .normal)
-            button(for: "暂停")?.apply(.active)
         } else {
             speech.resume()
             badge.set(cfg.scrollMode == .voice ? "跟读中" : "滚动中", live: true)
-            button(for: "暂停")?.setTitle("暂停", for: .normal)
-            button(for: "暂停")?.apply(.normal)
         }
-        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
-        scheduleHUDHide()
+        updateRecordingControl()
+    }
+
+    private func updateRecordingControl() {
+        let title: String
+        let style: HUDButton.Style
+        if camera.isRecording {
+            title = paused ? "继续跟读" : "暂停跟读"
+            let fallback = paused ? DreamIcon.play : DreamIcon.pause
+            let asset = paused ? "RecordingNextIcon" : "RecordingPauseIcon"
+            recordButton.setImage(recordingIcon(asset, fallback: fallback), for: .normal)
+            style = paused ? .active : .normal
+        } else {
+            title = "开始录制"
+            recordButton.setImage(recordingIcon("RecordingRecordIcon", fallback: DreamIcon.record), for: .normal)
+            style = .danger
+        }
+        recordButton.setTitle(title, for: .normal)
+        recordButton.apply(style)
     }
 
     /// 提词页直接调字号。念到一半发现太小，不该退回设置页。

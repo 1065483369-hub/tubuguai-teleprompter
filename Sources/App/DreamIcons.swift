@@ -189,6 +189,108 @@ enum DreamIcon {
         star(c, cx: s * 0.5, cy: s * 0.54, r: s * 0.13, color: violet)
     }
 
+    // ── 跟读工作台：深色玻璃上的粉紫实心控制图标 ──
+    static let textControls = make { c, s in
+        for (index, width) in [0.56, 0.38, 0.48].enumerated() {
+            let y = s * (0.30 + CGFloat(index) * 0.20)
+            let line = UIBezierPath(roundedRect: CGRect(x: s * 0.23, y: y,
+                                                         width: s * width, height: s * 0.075),
+                                    cornerRadius: s * 0.038)
+            fillDream(c, line, from: white, to: violet)
+            c.setFillColor(pink.cgColor)
+            c.fillEllipse(in: CGRect(x: s * (0.30 + CGFloat(index % 2) * 0.22), y: y - s * 0.035,
+                                     width: s * 0.145, height: s * 0.145))
+        }
+    }
+
+    static let mirrorHorizontal = make { c, s in
+        let frame = UIBezierPath(roundedRect: CGRect(x: s * 0.18, y: s * 0.27,
+                                                      width: s * 0.64, height: s * 0.46),
+                                      cornerRadius: s * 0.11)
+        fillDream(c, frame, from: white, to: violet)
+        deepV.withAlphaComponent(0.35).setFill()
+        c.fill(CGRect(x: s * 0.47, y: s * 0.31, width: s * 0.06, height: s * 0.38))
+        let arrow = UIBezierPath()
+        arrow.move(to: CGPoint(x: s * 0.30, y: s * 0.50)); arrow.addLine(to: CGPoint(x: s * 0.42, y: s * 0.40))
+        arrow.move(to: CGPoint(x: s * 0.30, y: s * 0.50)); arrow.addLine(to: CGPoint(x: s * 0.42, y: s * 0.60))
+        arrow.move(to: CGPoint(x: s * 0.70, y: s * 0.50)); arrow.addLine(to: CGPoint(x: s * 0.58, y: s * 0.40))
+        arrow.move(to: CGPoint(x: s * 0.70, y: s * 0.50)); arrow.addLine(to: CGPoint(x: s * 0.58, y: s * 0.60))
+        pink.setStroke(); arrow.lineWidth = s * 0.06; arrow.lineCapStyle = .round; arrow.stroke()
+    }
+
+    static let mirrorVertical = make { c, s in
+        let frame = UIBezierPath(roundedRect: CGRect(x: s * 0.27, y: s * 0.18,
+                                                      width: s * 0.46, height: s * 0.64),
+                                      cornerRadius: s * 0.11)
+        fillDream(c, frame, from: white, to: violet)
+        deepV.withAlphaComponent(0.35).setFill()
+        c.fill(CGRect(x: s * 0.31, y: s * 0.47, width: s * 0.38, height: s * 0.06))
+        let arrow = UIBezierPath()
+        arrow.move(to: CGPoint(x: s * 0.50, y: s * 0.30)); arrow.addLine(to: CGPoint(x: s * 0.40, y: s * 0.42))
+        arrow.move(to: CGPoint(x: s * 0.50, y: s * 0.30)); arrow.addLine(to: CGPoint(x: s * 0.60, y: s * 0.42))
+        arrow.move(to: CGPoint(x: s * 0.50, y: s * 0.70)); arrow.addLine(to: CGPoint(x: s * 0.40, y: s * 0.58))
+        arrow.move(to: CGPoint(x: s * 0.50, y: s * 0.70)); arrow.addLine(to: CGPoint(x: s * 0.60, y: s * 0.58))
+        pink.setStroke(); arrow.lineWidth = s * 0.06; arrow.lineCapStyle = .round; arrow.stroke()
+    }
+
+    static let flipCamera = make { c, s in
+        let body = UIBezierPath(roundedRect: CGRect(x: s * 0.20, y: s * 0.31,
+                                                     width: s * 0.60, height: s * 0.42),
+                                    cornerRadius: s * 0.12)
+        fillDream(c, body, from: white, to: pink)
+        let arc = UIBezierPath(arcCenter: CGPoint(x: s * 0.50, y: s * 0.52), radius: s * 0.15,
+                               startAngle: -.pi * 0.15, endAngle: .pi * 1.35, clockwise: true)
+        violet.setStroke(); arc.lineWidth = s * 0.065; arc.lineCapStyle = .round; arc.stroke()
+        star(c, cx: s * 0.64, cy: s * 0.39, r: s * 0.075, color: violet)
+    }
+
+    static func navigation(forward: Bool) -> UIImage {
+        make { c, s in
+            let circle = UIBezierPath(ovalIn: CGRect(x: s * 0.17, y: s * 0.17, width: s * 0.66, height: s * 0.66))
+            fillDream(c, circle, from: white, to: violet)
+            let p = UIBezierPath()
+            let sign: CGFloat = forward ? 1 : -1
+            p.move(to: CGPoint(x: s * 0.50 - sign * s * 0.12, y: s * 0.34))
+            p.addLine(to: CGPoint(x: s * 0.50 + sign * s * 0.13, y: s * 0.50))
+            p.addLine(to: CGPoint(x: s * 0.50 - sign * s * 0.12, y: s * 0.66))
+            violet.setStroke(); p.lineWidth = s * 0.08; p.lineCapStyle = .round; p.lineJoinStyle = .round; p.stroke()
+        }
+    }
+
+    static let record = make { c, s in
+        let ring = UIBezierPath(ovalIn: CGRect(x: s * 0.16, y: s * 0.16, width: s * 0.68, height: s * 0.68))
+        pink.withAlphaComponent(0.45).setFill(); ring.fill()
+        c.setFillColor(UIColor(hex: 0xFF759A).cgColor)
+        c.fillEllipse(in: CGRect(x: s * 0.32, y: s * 0.32, width: s * 0.36, height: s * 0.36))
+    }
+
+    static let pause = make { c, s in
+        let bars = [CGFloat(0.32), 0.53]
+        for x in bars {
+            let p = UIBezierPath(roundedRect: CGRect(x: s * x, y: s * 0.27, width: s * 0.15, height: s * 0.46),
+                                 cornerRadius: s * 0.07)
+            fillDream(c, p, from: pink, to: violet)
+        }
+    }
+
+    static let play = make { c, s in
+        let p = UIBezierPath()
+        p.move(to: CGPoint(x: s * 0.35, y: s * 0.24))
+        p.addLine(to: CGPoint(x: s * 0.72, y: s * 0.50))
+        p.addLine(to: CGPoint(x: s * 0.35, y: s * 0.76))
+        p.close(); fillDream(c, p, from: pink, to: violet)
+    }
+
+    static let floatingWindow = make { c, s in
+        let outer = UIBezierPath(roundedRect: CGRect(x: s * 0.17, y: s * 0.22, width: s * 0.66, height: s * 0.52),
+                                      cornerRadius: s * 0.12)
+        fillDream(c, outer, from: white, to: violet)
+        let inner = UIBezierPath(roundedRect: CGRect(x: s * 0.30, y: s * 0.34, width: s * 0.38, height: s * 0.28),
+                                      cornerRadius: s * 0.06)
+        pink.withAlphaComponent(0.7).setFill(); inner.fill()
+        star(c, cx: s * 0.73, cy: s * 0.28, r: s * 0.08)
+    }
+
     // ── 状态灯：发光小星，柔粉 ──
     static let statusStar = make(28) { c, s in
         star(c, cx: s * 0.5, cy: s * 0.5, r: s * 0.34, color: UIColor(hex: 0xFFC2DE))

@@ -28,6 +28,7 @@ final class PiPPrompter: NSObject {
     private var timer: DispatchSourceTimer?
     private var lastRenderedKey: String = ""
     private let keepAlive = KeepAlive()
+    private var playbackPaused = false
     /// 后台每隔几帧补推一次相同内容。PiP 的 layer 队列空了系统就显示黑窗，
     /// 所以即便文字没变也要有帧在流动。
     private var idleTicks = 0
@@ -42,6 +43,8 @@ final class PiPPrompter: NSObject {
     var onSkip: ((Int) -> Void)?
     /// 音频会话被打断（系统相机开始录制、来电等）。true=开始，false=已恢复。
     var onInterrupted: ((Bool) -> Void)?
+    /// 系统 PiP 的播放/暂停按钮只能通过 playback delegate 接入。
+    var onPlaybackPausedChange: ((Bool) -> Void)?
 
     var isSupported: Bool { AVPictureInPictureController.isPictureInPictureSupported() }
     var isActive: Bool { controller?.isPictureInPictureActive ?? false }
@@ -93,6 +96,7 @@ final class PiPPrompter: NSObject {
         guard let c = controller, !c.isPictureInPictureActive else { return }
         // 先起保活再开 PiP：切到相机 App 后要靠它维持后台执行，
         // 否则 App 被挂起，PiP 里的文字就冻住不动了。
+        playbackPaused = false
         keepAlive.start()
         renderFrame(force: true)          // 先垫一帧，否则 PiP 可能显示空白
         c.startPictureInPicture()
@@ -103,6 +107,10 @@ final class PiPPrompter: NSObject {
         controller?.stopPictureInPicture()
         stopTicking()
         keepAlive.stop()
+    }
+
+    func setPlaybackPaused(_ paused: Bool) {
+        playbackPaused = paused
     }
 
     private func startTicking() {
@@ -180,13 +188,20 @@ extension PiPPrompter: AVPictureInPictureControllerDelegate {
 // 报一个"正在播放的无限流"，这样 PiP 不会显示进度条也不会自动停。
 extension PiPPrompter: AVPictureInPictureSampleBufferPlaybackDelegate {
     func pictureInPictureController(_ c: AVPictureInPictureController,
-                                   setPlaying playing: Bool) {}
+                                   setPlaying playing: Bool) {
+        let paused = !playing
+        guard playbackPaused != paused else { return }
+        playbackPaused = paused
+        DispatchQueue.main.async { [weak self] in
+            self?.onPlaybackPausedChange?(paused)
+        }
+    }
     func pictureInPictureControllerTimeRangeForPlayback(
         _ c: AVPictureInPictureController) -> CMTimeRange {
         CMTimeRange(start: .negativeInfinity, duration: .positiveInfinity)
     }
     func pictureInPictureControllerIsPlaybackPaused(
-        _ c: AVPictureInPictureController) -> Bool { false }
+        _ c: AVPictureInPictureController) -> Bool { playbackPaused }
     func pictureInPictureController(_ c: AVPictureInPictureController,
                                    didTransitionToRenderSize newRenderSize: CMVideoDimensions) {}
     /// 系统的快退/快进在这里落地成「上下一句」。

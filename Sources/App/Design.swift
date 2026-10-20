@@ -417,6 +417,7 @@ final class HUDButton: UIButton {
     private var style: Style = .normal
     private let blur = UIVisualEffectView(
         effect: UIBlurEffect(style: .systemUltraThinMaterialDark))
+    private let iconView = UIImageView()
 
     init(_ title: String) {
         super.init(frame: .zero)
@@ -433,21 +434,31 @@ final class HUDButton: UIButton {
         // UIBlurEffect 真实折射底下内容，是 iOS 浮层的标准做法。
         blur.isUserInteractionEnabled = false
         insertSubview(blur, at: 0)
+        iconView.contentMode = .scaleAspectFit
+        iconView.isUserInteractionEnabled = false
+        addSubview(iconView)
+        imageView?.isHidden = true
         apply(.normal)
+    }
+
+    override func setImage(_ image: UIImage?, for state: UIControl.State) {
+        if state == .normal {
+            iconView.image = image
+            setNeedsLayout()
+        }
     }
 
     override func layoutSubviews() {
         super.layoutSubviews()
         blur.frame = bounds
-        // 录制工具栏的六个小按钮必须“图标在上、名称在下”。
-        // 横排图标加文字会在窄屏上互相挤压，用户反而看不清动作名称。
-        guard image(for: .normal) != nil else { return }
-        let imageSide: CGFloat = 17
-        imageView?.frame = CGRect(x: (bounds.width - imageSide) / 2, y: 6,
-                                  width: imageSide, height: imageSide)
+        guard iconView.image != nil else { return }
+        let imageSide: CGFloat = 32
+        iconView.frame = CGRect(x: (bounds.width - imageSide) / 2, y: 1,
+                                width: imageSide, height: imageSide)
         titleLabel?.font = DS.font(.caption2, weight: .semibold)
         titleLabel?.textAlignment = .center
-        titleLabel?.frame = CGRect(x: 2, y: 27, width: bounds.width - 4, height: 16)
+        titleLabel?.frame = CGRect(x: 2, y: bounds.height - 18,
+                                   width: bounds.width - 4, height: 16)
     }
     required init?(coder: NSCoder) { fatalError() }
 

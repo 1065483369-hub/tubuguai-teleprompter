@@ -8,8 +8,6 @@ final class SetupViewController: UIViewController {
         var script = ""
         var camOn = true
         var front = true
-        var buddyOn = false        // 默认关：占屏高 10%，对跟读无帮助
-        var keepAwake = true
         var fontSize: Float = 30
         var lineSpacing: Float = 150
         var textOpacity: Float = 100
@@ -66,7 +64,7 @@ final class SetupViewController: UIViewController {
         // 兔子后面加一团柔光把它"托"起来。
         let glow = UIView()
         glow.backgroundColor = UIColor.white.withAlphaComponent(0.5)
-        glow.layer.cornerRadius = 52
+        glow.layer.cornerRadius = 64
         glow.layer.masksToBounds = false
         glow.layer.shadowColor = UIColor.white.cgColor
         glow.layer.shadowOpacity = 0.9
@@ -75,8 +73,7 @@ final class SetupViewController: UIViewController {
         header.addSubview(glow)
         glowView = glow
 
-        // 首页与陪读页统一使用 App 图标中的兔子，建立一致的品牌识别。
-        mascot.image = UIImage(named: "BuddyIcon")
+        mascot.image = UIImage(named: "HomeRabbit")
         mascot.contentMode = .scaleAspectFit
         header.addSubview(mascot)
 
@@ -108,20 +105,20 @@ final class SetupViewController: UIViewController {
             header.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             header.trailingAnchor.constraint(equalTo: view.trailingAnchor),
 
-            // 兔子在左，比标题略大，视觉重心
+            // 兔子放大为首页主视觉，和标题形成清晰的品牌锚点。
             mascot.leadingAnchor.constraint(equalTo: header.leadingAnchor, constant: 20),
-            mascot.bottomAnchor.constraint(equalTo: header.bottomAnchor, constant: -16),
-            mascot.widthAnchor.constraint(equalToConstant: 58),
-            mascot.heightAnchor.constraint(equalToConstant: 66),
+            mascot.bottomAnchor.constraint(equalTo: header.bottomAnchor, constant: -12),
+            mascot.widthAnchor.constraint(equalToConstant: 84),
+            mascot.heightAnchor.constraint(equalToConstant: 96),
 
-            col.leadingAnchor.constraint(equalTo: mascot.trailingAnchor, constant: 16),
+            col.leadingAnchor.constraint(equalTo: mascot.trailingAnchor, constant: 12),
             col.trailingAnchor.constraint(equalTo: header.trailingAnchor, constant: -20),
             col.bottomAnchor.constraint(equalTo: header.bottomAnchor, constant: -24),
             col.topAnchor.constraint(greaterThanOrEqualTo:
                 view.safeAreaLayoutGuide.topAnchor, constant: 10),
-            // 高度要装得下兔子（66）+ 上下留白，96 会把耳朵切掉
+            // 给放大的兔子留足耳朵和星星的呼吸空间。
             header.bottomAnchor.constraint(equalTo:
-                view.safeAreaLayoutGuide.topAnchor, constant: 126),
+                view.safeAreaLayoutGuide.topAnchor, constant: 146),
         ])
     }
 
@@ -130,9 +127,9 @@ final class SetupViewController: UIViewController {
         dream.frame = view.bounds
         view.sendSubviewToBack(dream)
         // 柔光跟着兔子走，藏在它后面
-        glowView?.frame = CGRect(x: mascot.frame.midX - 52,
-                                 y: mascot.frame.midY - 52,
-                                 width: 104, height: 104)
+        glowView?.frame = CGRect(x: mascot.frame.midX - 64,
+                                 y: mascot.frame.midY - 64,
+                                 width: 128, height: 128)
     }
 
     /// 头图上的兔子。和 App 图标同一套形体（连续路径而非椭圆拼接），
@@ -289,36 +286,19 @@ final class SetupViewController: UIViewController {
         scriptCard.stack.addArrangedSubview(estStack)
         content.addArrangedSubview(scriptCard)
 
-        // 卡片顺序按念稿的真实动作走：
-        //   稿子（粘） → 显示（调字号看得清） → 滚动（怎么跟） → 拍摄（要不要录）
-        // 原来把「显示」排在最后，粘完稿想调字号得划到页底，顺序是反的。
+        // 首页顺序按开读前的真实动作走：稿子 → 跟读设置 → 拍摄；
+        // 显示样式留在跟读页，边看效果边调更合理。
 
         // ── 拍摄 ──
         let shootCard = Card("拍摄")
         let camT = Toggle("相机取景", on: config.camOn, icon: DreamIcon.camera)
         let frontT = Toggle("前置摄像头", on: config.front, icon: DreamIcon.front)
-        let buddyT = Toggle("陪读兔", on: config.buddyOn, icon: DreamIcon.buddy)
-        let keepT = Toggle("屏幕常亮", on: config.keepAwake, icon: DreamIcon.keepAwake)
         camT.onChange = { [weak self] v in self?.config.camOn = v }
         frontT.onChange = { [weak self] v in self?.config.front = v }
-        buddyT.onChange = { [weak self] v in self?.config.buddyOn = v }
-        keepT.onChange = { [weak self] v in self?.config.keepAwake = v }
-        shootCard.stack.addArrangedSubview(grid([camT, frontT, buddyT, keepT]))
+        shootCard.stack.addArrangedSubview(grid([camT, frontT]))
 
-        // 提词区高度：用户要能自己调，架手机的高度和视线角度每次都不一样
-        let topRow = SliderRow("提词位置", min: 15, max: 65, value: config.promptTop) {
-            "\(Int($0))%" }
-        topRow.onChange = { [weak self] v in self?.config.promptTop = v }
-        shootCard.stack.addArrangedSubview(topRow)
-        let topHint = UILabel()
-        topHint.text = "让正在读的文字靠近镜头，减少眼神向下偏移"
-        topHint.font = DS.font(.caption1)
-        topHint.textColor = DS.ink3
-        topHint.numberOfLines = 0
-        shootCard.stack.addArrangedSubview(topHint)
-
-        // ── 滚动方式 ──
-        let scrollCard = Card("滚动")
+        // ── 跟读设置 ──
+        let scrollCard = Card("跟读设置")
         let modeSeg = UISegmentedControl(items: ScrollMode.allCases.map(\.rawValue))
         modeSeg.selectedSegmentIndex =
             ScrollMode.allCases.firstIndex(of: config.scrollMode) ?? 0
@@ -344,37 +324,24 @@ final class SetupViewController: UIViewController {
         speedRow.onChange = { [weak self] v in self?.config.manualSpeed = v }
         scrollCard.stack.addArrangedSubview(speedRow)
 
+        let topRow = SliderRow("提词位置", min: 15, max: 65, value: config.promptTop) {
+            "\(Int($0))%" }
+        topRow.onChange = { [weak self] v in self?.config.promptTop = v }
+        scrollCard.stack.addArrangedSubview(topRow)
+        let topHint = UILabel()
+        topHint.text = "让正在读的文字靠近镜头，减少眼神向下偏移"
+        topHint.font = DS.font(.caption1)
+        topHint.textColor = DS.ink3
+        topHint.numberOfLines = 0
+        scrollCard.stack.addArrangedSubview(topHint)
+
         let cdRow = SliderRow("倒计时", min: 0, max: 10, value: Float(config.countdown)) {
             $0 < 1 ? "关" : "\(Int($0))秒" }
         cdRow.onChange = { [weak self] v in self?.config.countdown = Int(v) }
         scrollCard.stack.addArrangedSubview(cdRow)
         refreshModeUI()
 
-        // ── 字号与排版 ──
-        // 原来叫「显示」：用户想调字号时不会想到点「显示」，名字说清内容。
-        let showCard = Card("字号与排版")
-        let fs = SliderRow("字号", min: 20, max: 56, value: config.fontSize) {
-            "\(Int($0))" }
-        fs.onChange = { [weak self] v in self?.config.fontSize = v }
-        let lh = SliderRow("行距", min: 120, max: 220, value: config.lineSpacing) {
-            String(format: "%.1f", $0 / 100) }
-        lh.onChange = { [weak self] v in self?.config.lineSpacing = v }
-        let op = SliderRow("不透明", min: 35, max: 100, value: config.textOpacity) {
-            "\(Int($0))%" }
-        op.onChange = { [weak self] v in self?.config.textOpacity = v }
-        showCard.stack.addArrangedSubview(fs)
-        showCard.stack.addArrangedSubview(lh)
-        showCard.stack.addArrangedSubview(op)
-
-        let mx = Toggle("左右镜像", on: config.mirrorX)
-        let my = Toggle("上下镜像", on: config.mirrorY)
-        mx.onChange = { [weak self] v in self?.config.mirrorX = v }
-        my.onChange = { [weak self] v in self?.config.mirrorY = v }
-        showCard.stack.addArrangedSubview(grid([mx, my]))
-
-        // 四张卡一起按念稿顺序插入（各卡内容在上面分别搭好）：
-        // 粘完稿先调字号看得清，再定怎么跟读，最后才管要不要开相机录。
-        content.addArrangedSubview(showCard)
+        // 字号、透明度、行距和镜像都在跟读页即时调整，首页只保留进稿前必要配置。
         content.addArrangedSubview(scrollCard)
         content.addArrangedSubview(shootCard)
 
