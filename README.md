@@ -33,7 +33,6 @@
 - Swift Package Manager
 
 ```bash
-cd Prompter
 swift test
 open Prompter.xcodeproj
 ```
