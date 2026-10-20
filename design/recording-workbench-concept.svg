@@ -1,0 +1,81 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="2400" height="1420" viewBox="0 0 2400 1420">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#100b24"/><stop offset=".55" stop-color="#20113d"/><stop offset="1" stop-color="#0a1023"/></linearGradient>
+    <linearGradient id="glass" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#ffffff" stop-opacity=".19"/><stop offset="1" stop-color="#d9b8ff" stop-opacity=".055"/></linearGradient>
+    <linearGradient id="pink" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#ff9fcc"/><stop offset="1" stop-color="#a77dff"/></linearGradient>
+    <filter id="blur"><feGaussianBlur stdDeviation="55"/></filter>
+    <filter id="shadow"><feDropShadow dx="0" dy="20" stdDeviation="18" flood-color="#02020b" flood-opacity=".55"/></filter>
+    <style>
+      .title{font-family:-apple-system,BlinkMacSystemFont,'PingFang SC',sans-serif;font-weight:700;fill:#fff}.body{font-family:-apple-system,BlinkMacSystemFont,'PingFang SC',sans-serif;fill:#c8bddc}.muted{font-family:-apple-system,BlinkMacSystemFont,'PingFang SC',sans-serif;fill:#8f83ac}.label{font-family:-apple-system,BlinkMacSystemFont,'PingFang SC',sans-serif;font-weight:600;fill:#ded5ed}.tiny{font-family:-apple-system,BlinkMacSystemFont,'PingFang SC',sans-serif;font-size:18px;fill:#a89dbe}.icon{fill:#f7f1ff}.line{stroke:#f2eaff;stroke-width:4;stroke-linecap:round;fill:none}
+    </style>
+  </defs>
+  <rect width="2400" height="1420" fill="#080716"/>
+  <circle cx="530" cy="100" r="310" fill="#7f51ce" opacity=".23" filter="url(#blur)"/><circle cx="1960" cy="1250" r="380" fill="#ec669e" opacity=".14" filter="url(#blur)"/>
+  <text x="120" y="105" class="title" font-size="44">兔不乖的提词器 · 深色玻璃工作台</text>
+  <text x="120" y="147" class="body" font-size="23">首页、编辑、录制与录制内即时调整</text>
+
+  <!-- phone 1 -->
+  <g transform="translate(120 215)" filter="url(#shadow)">
+    <rect width="480" height="1000" rx="54" fill="url(#bg)" stroke="#ffffff" stroke-opacity=".18" stroke-width="2"/>
+    <circle cx="66" cy="68" r="9" fill="#fff"/><text x="90" y="75" class="label" font-size="21">准备录制</text><text x="390" y="75" class="tiny">···</text>
+    <rect x="34" y="112" width="412" height="238" rx="30" fill="url(#glass)" stroke="#fff" stroke-opacity=".15"/>
+    <image xlink:href="master-mascot.png" x="238" y="101" width="230" height="230" preserveAspectRatio="xMidYMid meet"/>
+    <text x="62" y="162" class="tiny">当前稿子</text><text x="62" y="205" class="title" font-size="29">我的第一条口播</text>
+    <text x="62" y="249" class="body" font-size="18">682 字　·　预计 3 分 20 秒</text>
+    <rect x="62" y="279" width="128" height="40" rx="20" fill="#fff" fill-opacity=".11"/><text x="82" y="305" class="label" font-size="17">编辑稿子　›</text>
+    <text x="38" y="407" class="title" font-size="23">录制方式</text>
+    <rect x="34" y="435" width="198" height="112" rx="26" fill="url(#pink)" opacity=".97"/><text x="59" y="480" class="title" font-size="22">语音跟读</text><text x="59" y="514" class="body" font-size="16">跟着你的节奏走</text>
+    <rect x="248" y="435" width="198" height="112" rx="26" fill="url(#glass)" stroke="#fff" stroke-opacity=".12"/><text x="273" y="480" class="label" font-size="22">匀速滚动</text><text x="273" y="514" class="muted" font-size="16">均匀推进稿子</text>
+    <text x="38" y="611" class="title" font-size="23">开场</text>
+    <rect x="34" y="638" width="412" height="95" rx="26" fill="url(#glass)" stroke="#fff" stroke-opacity=".12"/><text x="60" y="678" class="label" font-size="19">提词位置</text><text x="60" y="708" class="tiny">顶部偏上 · 可在录制时实时拖动</text><text x="406" y="689" class="body" font-size="25">›</text>
+    <rect x="34" y="753" width="412" height="95" rx="26" fill="url(#glass)" stroke="#fff" stroke-opacity=".12"/><text x="60" y="793" class="label" font-size="19">倒计时</text><text x="60" y="823" class="tiny">3 秒</text><text x="406" y="804" class="body" font-size="25">›</text>
+    <rect x="34" y="890" width="412" height="74" rx="37" fill="url(#pink)"/><circle cx="205" cy="927" r="12" fill="#fff"/><text x="230" y="935" class="title" font-size="22">开始录制</text>
+  </g>
+
+  <!-- phone 2 -->
+  <g transform="translate(680 215)" filter="url(#shadow)">
+    <rect width="480" height="1000" rx="54" fill="url(#bg)" stroke="#ffffff" stroke-opacity=".18" stroke-width="2"/>
+    <text x="43" y="77" class="title" font-size="36">‹</text><text x="90" y="75" class="label" font-size="21">编辑稿子</text><text x="390" y="75" class="label" font-size="19">完成</text>
+    <rect x="34" y="112" width="412" height="61" rx="22" fill="#fff" fill-opacity=".09"/>
+    <text x="57" y="151" class="label" font-size="17">粘贴</text><text x="130" y="151" class="label" font-size="17">导入</text><text x="203" y="151" class="label" font-size="17">历史</text><text x="276" y="151" class="label" font-size="17">示例稿</text><circle cx="398" cy="142" r="18" fill="#ff9fcb" fill-opacity=".2"/><path d="M390 142l5 5 10-13" class="line" stroke="#ffb6d8" stroke-width="3"/>
+    <text x="40" y="223" class="tiny">682 字　约 3 分 20 秒</text><text x="385" y="223" class="tiny">清空</text>
+    <rect x="34" y="252" width="412" height="596" rx="28" fill="#fff" fill-opacity=".055" stroke="#fff" stroke-opacity=".1"/>
+    <text x="62" y="307" class="title" font-size="25">大家好，今天想和你聊聊</text><text x="62" y="354" class="body" font-size="22">如何用一个更自在的状态，</text><text x="62" y="401" class="body" font-size="22">面对镜头，完成一条有温度的</text><text x="62" y="448" class="body" font-size="22">表达。先深呼吸，然后看向镜头。</text><rect x="58" y="476" width="260" height="31" rx="15" fill="#d9a8ff" fill-opacity=".14"/><text x="62" y="500" class="body" font-size="22">接下来，让我们从第一句开始。</text>
+    <text x="40" y="888" class="tiny">提示：编辑完成后，所有显示效果均可在录制页实时调整</text>
+  </g>
+
+  <!-- phone 3 recording -->
+  <g transform="translate(1240 215)" filter="url(#shadow)">
+    <rect width="480" height="1000" rx="54" fill="#090b18" stroke="#ffffff" stroke-opacity=".18" stroke-width="2"/>
+    <rect x="20" y="20" width="440" height="640" rx="35" fill="#25203a"/>
+    <circle cx="238" cy="290" r="210" fill="#704ec1" opacity=".22" filter="url(#blur)"/>
+    <text x="40" y="78" class="title" font-size="38">‹</text><circle cx="420" cy="62" r="8" fill="#ff6fae"/><text x="351" y="69" class="label" font-size="16">REC  00:28</text>
+    <text x="60" y="236" class="body" font-size="25" opacity=".38">镜头前的表达，</text><text x="60" y="286" class="body" font-size="25" opacity=".48">不必刻意追求完美。</text>
+    <rect x="43" y="326" width="394" height="3" rx="2" fill="url(#pink)"/><circle cx="240" cy="327" r="7" fill="#fff"/>
+    <text x="60" y="376" class="title" font-size="30">先把这一句话，好好说完。</text>
+    <text x="60" y="426" class="body" font-size="25" opacity=".44">剩下的，就交给节奏。</text><text x="60" y="476" class="body" font-size="25" opacity=".28">现在，轻轻看向镜头。</text>
+    <rect x="132" y="686" width="216" height="58" rx="29" fill="url(#glass)" stroke="#fff" stroke-opacity=".14"/>
+    <text x="153" y="722" class="label" font-size="18">⌁</text><text x="182" y="722" class="label" font-size="17">语音跟读</text><text x="294" y="722" class="tiny">36%</text>
+    <g transform="translate(48 771)"><rect width="55" height="55" rx="18" fill="url(#glass)"/><text x="18" y="36" class="label" font-size="24">Aa</text><rect x="67" width="55" height="55" rx="18" fill="url(#glass)"/><text x="82" y="36" class="label" font-size="24">◈</text><rect x="134" width="55" height="55" rx="18" fill="url(#glass)"/><text x="150" y="35" class="label" font-size="22">↔</text><rect x="201" width="55" height="55" rx="18" fill="url(#glass)"/><text x="216" y="36" class="label" font-size="24">⌯</text><rect x="268" width="55" height="55" rx="18" fill="url(#glass)"/><text x="284" y="36" class="label" font-size="24">▣</text><rect x="335" width="55" height="55" rx="18" fill="url(#glass)"/><text x="350" y="37" class="label" font-size="24">···</text></g>
+    <text x="56" y="849" class="tiny">文字</text><text x="125" y="849" class="tiny">透明</text><text x="191" y="849" class="tiny">镜像</text><text x="263" y="849" class="tiny">位置</text><text x="332" y="849" class="tiny">相机</text>
+    <circle cx="240" cy="923" r="55" fill="#ff8fbd"/><circle cx="240" cy="923" r="42" fill="#fff" fill-opacity=".96"/><rect x="83" y="911" width="13" height="25" rx="3" fill="#eee6fa"/><path d="M370 918l18-12v34l-18-12z" fill="#eee6fa"/>
+  </g>
+
+  <!-- phone 4 adjustment -->
+  <g transform="translate(1800 215)" filter="url(#shadow)">
+    <rect width="480" height="1000" rx="54" fill="#090b18" stroke="#ffffff" stroke-opacity=".18" stroke-width="2"/>
+    <rect x="20" y="20" width="440" height="640" rx="35" fill="#25203a"/>
+    <circle cx="238" cy="286" r="210" fill="#704ec1" opacity=".22" filter="url(#blur)"/>
+    <text x="40" y="78" class="title" font-size="38">‹</text><text x="353" y="69" class="label" font-size="16">预览中</text>
+    <text x="60" y="225" class="body" font-size="21" opacity=".30">镜头前的表达，</text><rect x="43" y="276" width="394" height="3" rx="2" fill="url(#pink)"/><circle cx="314" cy="277" r="7" fill="#fff"/>
+    <text x="60" y="327" class="title" font-size="35">先把这一句话，</text><text x="60" y="377" class="title" font-size="35">好好说完。</text><text x="60" y="428" class="body" font-size="25" opacity=".38">剩下的，就交给节奏。</text>
+    <rect x="20" y="590" width="440" height="390" rx="34" fill="#211b34" stroke="#fff" stroke-opacity=".17"/>
+    <rect x="192" y="608" width="96" height="5" rx="3" fill="#857799"/><text x="42" y="663" class="title" font-size="23">文字显示</text><text x="381" y="663" class="tiny">完成</text>
+    <text x="43" y="714" class="label" font-size="18">字号</text><text x="397" y="714" class="label" font-size="18">32</text><rect x="44" y="738" width="365" height="5" rx="3" fill="#675d78"/><rect x="44" y="738" width="238" height="5" rx="3" fill="url(#pink)"/><circle cx="282" cy="741" r="11" fill="#fff"/>
+    <text x="43" y="794" class="label" font-size="18">文字透明度</text><text x="390" y="794" class="label" font-size="18">82%</text><rect x="44" y="818" width="365" height="5" rx="3" fill="#675d78"/><rect x="44" y="818" width="300" height="5" rx="3" fill="url(#pink)"/><circle cx="344" cy="821" r="11" fill="#fff"/>
+    <text x="43" y="874" class="label" font-size="18">行距</text><text x="400" y="874" class="label" font-size="18">中</text><rect x="44" y="898" width="365" height="5" rx="3" fill="#675d78"/><rect x="44" y="898" width="182" height="5" rx="3" fill="url(#pink)"/><circle cx="226" cy="901" r="11" fill="#fff"/>
+    <text x="43" y="949" class="tiny">调整后已即时应用到上方提词稿</text>
+  </g>
+  <text x="153" y="1280" class="label" font-size="24">01　准备录制</text><text x="713" y="1280" class="label" font-size="24">02　编辑稿子</text><text x="1273" y="1280" class="label" font-size="24">03　录制工作台</text><text x="1833" y="1280" class="label" font-size="24">04　录制内即时调节</text>
+  <text x="120" y="1350" class="muted" font-size="19">设计原则：顶栏只放返回；相机上方保持干净；所有录制工具放在录制键上方；面板调整立即反馈到提词内容。</text>
+</svg>

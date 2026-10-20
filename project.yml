@@ -1,0 +1,92 @@
+name: Prompter
+options:
+  bundleIdPrefix: local.prompter
+  deploymentTarget:
+    iOS: "16.0"
+  createIntermediateGroups: true
+
+targets:
+  Prompter:
+    type: application
+    platform: iOS
+    sources:
+      - path: Sources/App
+      - path: Sources/PrompterCore
+      - path: Assets.xcassets
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: local.prompter.app
+        MARKETING_VERSION: "0.1"
+        CURRENT_PROJECT_VERSION: "1"
+        TARGETED_DEVICE_FAMILY: "1"
+        SWIFT_VERSION: "5.0"
+        # 自签名调试用，真机需要在 Xcode 里选自己的 Apple ID team
+        # 图标：兔子捧提词板，板上两行呼应"读到哪亮到哪"
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        CODE_SIGN_STYLE: Automatic
+    info:
+      path: Sources/App/Info.plist
+      properties:
+        CFBundleDisplayName: 兔不乖的提词器
+        # 横竖屏都支持：配分光镜或外接支架时横屏更常见。
+        # 注意必须写在 info.properties 里 —— INFOPLIST_KEY_* 构建设置
+        # 只在 Xcode 自动生成 plist 时有效，xcodegen 显式写 plist 时被忽略
+        # （启动屏那个信箱化 bug 就是同一个坑）。
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+        # 必须声明启动屏，否则 iOS 按兼容模式运行，把窗口信箱化成
+        # 402x603（2:3），上下各留 135pt 黑边 —— 就是"整个 App 是 3:4"。
+        UILaunchScreen:
+          UIColorName: ""
+          UIImageRespectsSafeAreaInsets: false
+        # 采用 UIScene，拿到真正的全屏尺寸
+        UIApplicationSceneManifest:
+          UIApplicationSupportsMultipleScenes: false
+          UISceneConfigurations:
+            UIWindowSceneSessionRoleApplication:
+              - UISceneConfigurationName: Default
+                UISceneDelegateClassName: $(PRODUCT_MODULE_NAME).SceneDelegate
+        UIStatusBarStyle: UIStatusBarStyleLightContent
+        UIViewControllerBasedStatusBarAppearance: false
+        # 画中画必须开这个后台模式，否则切后台 PiP 立刻停
+        UIBackgroundModes: [audio]
+        NSCameraUsageDescription: 用于取景和录制口播视频。
+        NSMicrophoneUsageDescription: 用于语音跟读和录制收音。
+        NSSpeechRecognitionUsageDescription: 用于识别你读到了哪里，自动滚动提词。
+        NSPhotoLibraryAddUsageDescription: 用于把录好的视频存入相册。
+
+  PrompterTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - path: Tests/AppTests
+    dependencies:
+      - target: Prompter
+    settings:
+      base:
+        SWIFT_VERSION: "5.0"
+        GENERATE_INFOPLIST_FILE: YES
+
+  PrompterUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources:
+      - path: Tests/UITests
+    dependencies:
+      - target: Prompter
+    settings:
+      base:
+        SWIFT_VERSION: "5.0"
+        GENERATE_INFOPLIST_FILE: YES
+
+schemes:
+  Prompter:
+    build:
+      targets:
+        Prompter: all
+        PrompterTests: [test]
+        PrompterUITests: [test]
+    test:
+      targets: [PrompterTests, PrompterUITests]
