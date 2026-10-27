@@ -11,10 +11,13 @@ final class ScriptEditorViewController: UIViewController {
 
     private let textView = UITextView()
     private let checkButton = UIButton(type: .system)
+    private let polishButton = UIButton(type: .system)
+    private let undoPolishButton = UIButton(type: .system)
     private let placeholder = UILabel()
     private let countLabel = UILabel()
     private let estStack = UIStackView()
     private var textBottom: NSLayoutConstraint!
+    private var textBeforePolish: String?
 
     var onDone: ((String) -> Void)?
     private var initialText: String
@@ -61,11 +64,18 @@ final class ScriptEditorViewController: UIViewController {
         done.accessibilityIdentifier = "editorDone"
         done.addTarget(self, action: #selector(doneTapped), for: .touchUpInside)
 
+        undoPolishButton.setTitle("撤销", for: .normal)
+        undoPolishButton.titleLabel?.font = DS.font(.subheadline, weight: .semibold)
+        undoPolishButton.setTitleColor(DS.ink2, for: .normal)
+        undoPolishButton.accessibilityIdentifier = "undoPolish"
+        undoPolishButton.isHidden = true
+        undoPolishButton.addTarget(self, action: #selector(undoPolishTapped), for: .touchUpInside)
+
         // 顶部栏不用 stack + 空 UIView 间隔件：裸 UIView 没有内在尺寸，
         // 在 .fill 下会把整行高度拉成 0（实测 bar 高度 = 0，内容全不可见）。
         // 直接用容器 + 三个约束，标题居中，两侧按钮贴边。
         let bar = UIView()
-        [cancel, title, done].forEach {
+        [cancel, title, undoPolishButton, done].forEach {
             $0.translatesAutoresizingMaskIntoConstraints = false
             bar.addSubview($0)
         }
@@ -77,6 +87,8 @@ final class ScriptEditorViewController: UIViewController {
             title.centerYAnchor.constraint(equalTo: bar.centerYAnchor),
             done.trailingAnchor.constraint(equalTo: bar.trailingAnchor),
             done.centerYAnchor.constraint(equalTo: bar.centerYAnchor),
+            undoPolishButton.trailingAnchor.constraint(equalTo: done.leadingAnchor, constant: -12),
+            undoPolishButton.centerYAnchor.constraint(equalTo: bar.centerYAnchor),
         ])
 
         // ── 快捷动作：粘贴 / 导入 / 历史 / 清空 / 示例 ──
@@ -132,6 +144,21 @@ final class ScriptEditorViewController: UIViewController {
         checkButton.accessibilityIdentifier = "sensitiveButton"
         checkButton.addTarget(self, action: #selector(checkTapped), for: .touchUpInside)
 
+        polishButton.setTitle("口播优化", for: .normal)
+        polishButton.titleLabel?.font = DS.font(.subheadline, weight: .semibold)
+        polishButton.titleLabel?.adjustsFontForContentSizeCategory = true
+        polishButton.setTitleColor(DS.ink, for: .normal)
+        polishButton.backgroundColor = DS.panel2
+        polishButton.layer.cornerRadius = 10
+        polishButton.layer.borderWidth = 1
+        polishButton.layer.borderColor = DS.line.cgColor
+        polishButton.accessibilityIdentifier = "polishButton"
+        polishButton.addTarget(self, action: #selector(polishTapped), for: .touchUpInside)
+
+        let reviewActions = UIStackView(arrangedSubviews: [checkButton, polishButton])
+        reviewActions.spacing = 8
+        reviewActions.distribution = .fillEqually
+
         // ── 底部信息：字数 + 时长预估 ──
         countLabel.font = DS.font(.footnote)
         countLabel.adjustsFontForContentSizeCategory = true
@@ -142,17 +169,17 @@ final class ScriptEditorViewController: UIViewController {
         info.spacing = 10
         info.alignment = .center
 
-        [bar, actions, textView, placeholder, checkButton, info].forEach {
+        [bar, actions, textView, placeholder, reviewActions, info].forEach {
             $0.translatesAutoresizingMaskIntoConstraints = false
         }
         view.addSubview(bar); view.addSubview(actions)
-        view.addSubview(textView); view.addSubview(checkButton); view.addSubview(info)
+        view.addSubview(textView); view.addSubview(reviewActions); view.addSubview(info)
 
         let g = view.safeAreaLayoutGuide
         // 底边同时受两条约束：信息栏之上、且不越过键盘顶部。
         // 手工算键盘几何很容易错（viewDidLoad 时 safeAreaInsets 还是 0，
         // 我算出过 -232 的偏移把输入框压成 13pt）。交给 keyboardLayoutGuide。
-        textBottom = textView.bottomAnchor.constraint(equalTo: checkButton.topAnchor, constant: -10)
+        textBottom = textView.bottomAnchor.constraint(equalTo: reviewActions.topAnchor, constant: -10)
         let aboveKeyboard = textView.bottomAnchor.constraint(
             lessThanOrEqualTo: view.keyboardLayoutGuide.topAnchor, constant: -52)
         aboveKeyboard.priority = .required
@@ -177,10 +204,10 @@ final class ScriptEditorViewController: UIViewController {
             aboveKeyboard,
             minH,
 
-            checkButton.leadingAnchor.constraint(equalTo: g.leadingAnchor, constant: 12),
-            checkButton.trailingAnchor.constraint(equalTo: g.trailingAnchor, constant: -12),
-            checkButton.bottomAnchor.constraint(equalTo: info.topAnchor, constant: -10),
-            checkButton.heightAnchor.constraint(equalToConstant: 42),
+            reviewActions.leadingAnchor.constraint(equalTo: g.leadingAnchor, constant: 12),
+            reviewActions.trailingAnchor.constraint(equalTo: g.trailingAnchor, constant: -12),
+            reviewActions.bottomAnchor.constraint(equalTo: info.topAnchor, constant: -10),
+            reviewActions.heightAnchor.constraint(equalToConstant: 42),
 
             placeholder.topAnchor.constraint(equalTo: textView.topAnchor, constant: 14),
             placeholder.leadingAnchor.constraint(equalTo: textView.leadingAnchor, constant: 14),
@@ -227,6 +254,7 @@ final class ScriptEditorViewController: UIViewController {
             return
         }
         textView.text = t
+        clearPolishUndo()
         refresh()
         UIImpactFeedbackGenerator(style: .light).impactOccurred()
     }
@@ -242,6 +270,7 @@ final class ScriptEditorViewController: UIViewController {
 
     @objc private func clearTapped() {
         textView.text = ""
+        clearPolishUndo()
         refresh()
     }
 
@@ -255,6 +284,7 @@ final class ScriptEditorViewController: UIViewController {
         }
         vc.onSelect = { [weak self] text in
             self?.textView.text = text
+            self?.clearPolishUndo()
             self?.refresh()
             UIImpactFeedbackGenerator(style: .light).impactOccurred()
         }
@@ -273,6 +303,7 @@ final class ScriptEditorViewController: UIViewController {
             "点击录制，可以边录边跟读，视频会保存到相册。需要用系统相机拍摄时，打开浮窗后切到系统相机，也能继续看稿。",
             "第一次使用时，请允许麦克风、语音识别、相机和相册权限。建议先用一小段稿子试读，调好字号、提词位置和语速后再正式录制。",
         ].joined(separator: "\n")
+        clearPolishUndo()
         refresh()
     }
 
@@ -291,9 +322,47 @@ final class ScriptEditorViewController: UIViewController {
         vc.onApply = { [weak self] next in
             guard let self else { return }
             self.textView.text = next
+            self.clearPolishUndo()
             self.refresh()
         }
         present(vc, animated: true)
+    }
+
+    @objc private func polishTapped() {
+        let text = textView.text ?? ""
+        guard !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+            countLabel.text = "先粘贴稿子"
+            countLabel.textColor = UIColor(hex: 0xFB7185)
+            UINotificationFeedbackGenerator().notificationOccurred(.warning)
+            return
+        }
+        view.endEditing(true)
+        let controller = PolishViewController(text: text)
+        controller.onApply = { [weak self] result in
+            guard let self else { return }
+            self.textBeforePolish = self.textView.text
+            self.textView.text = result
+            self.undoPolishButton.isHidden = false
+            self.refresh()
+        }
+        controller.modalPresentationStyle = .pageSheet
+        if let sheet = controller.sheetPresentationController {
+            sheet.detents = [.large()]
+            sheet.prefersGrabberVisible = true
+        }
+        present(controller, animated: true)
+    }
+
+    @objc private func undoPolishTapped() {
+        guard let previous = textBeforePolish else { return }
+        textView.text = previous
+        clearPolishUndo()
+        refresh()
+    }
+
+    private func clearPolishUndo() {
+        textBeforePolish = nil
+        undoPolishButton.isHidden = true
     }
 
     @objc private func cancelTapped() {
@@ -326,7 +395,10 @@ final class ScriptEditorViewController: UIViewController {
 }
 
 extension ScriptEditorViewController: UITextViewDelegate {
-    func textViewDidChange(_ textView: UITextView) { refresh() }
+    func textViewDidChange(_ textView: UITextView) {
+        clearPolishUndo()
+        refresh()
+    }
 }
 
 extension ScriptEditorViewController: UIDocumentPickerDelegate {
@@ -340,6 +412,7 @@ extension ScriptEditorViewController: UIDocumentPickerDelegate {
             return
         }
         textView.text = text
+        clearPolishUndo()
         refresh()
         UIImpactFeedbackGenerator(style: .light).impactOccurred()
     }

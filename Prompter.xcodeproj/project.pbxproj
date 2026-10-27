@@ -15,12 +15,14 @@
 		2F9AB580F08523DAAC1E84D8 /* AudioSessionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47EA5A50C73FDE29173AA113 /* AudioSessionManager.swift */; };
 		30ACFDC4014E7CCC25D1BCDF /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1F1C3EE2FEA5F40EFAAE167 /* SceneDelegate.swift */; };
 		3B7DEA350DB99ACA66CEC8DE /* BrandingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7A8B7F4D22E12D343B909B9 /* BrandingTests.swift */; };
+		3CEDC979C0CE32F6332AA7C1 /* PolishViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95AD2AB7724352D7FE7F3C5C /* PolishViewController.swift */; };
 		4726E85B228EC4275256F2EB /* PiPPrompter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E4836548AC5A677A614FAA7 /* PiPPrompter.swift */; };
 		4DA405FA0608364A3019F612 /* CameraController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A375E7F3626081A9FE09577 /* CameraController.swift */; };
 		5D167876E7A35E255118DFE6 /* SpeechTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAAF38515F3DF0AC45FF911E /* SpeechTracker.swift */; };
 		5F9D1E82C52FA48A8BC2E173 /* RendererTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 622EB0825AA234557EE8D324 /* RendererTests.swift */; };
 		658DB81525D1BC83C2619AFE /* Align.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD102DC4F01C3F1E93247C39 /* Align.swift */; };
 		6CA1B7C8B23E23516A76E914 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD0627020382122D7A4BA75D /* AppDelegate.swift */; };
+		6FB36F1345EACEF9985D6B8B /* PolishUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F463A3F4587E4E2B6BECD2C /* PolishUITests.swift */; };
 		787A5253E2148703B6D71717 /* SensitiveUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1FE646D289C213195112A33F /* SensitiveUITests.swift */; };
 		7CAB99AD7D30031CADA1F336 /* ImportTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A413283E8F6F2E80097A96F4 /* ImportTests.swift */; };
 		87A2AD1AC65C3E99EC2A2D2F /* RecordingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3472A55D8F62F49A1502382 /* RecordingTests.swift */; };
@@ -34,6 +36,7 @@
 		C21AD471E2DD8C98B57430B5 /* KeyboardTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51693764F1198B9157913DA9 /* KeyboardTests.swift */; };
 		C4B7C6F081AD859119D1F992 /* ScriptHistoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FBEA1A19D0EAA7DF215C561 /* ScriptHistoryTests.swift */; };
 		C668D62780B21DA4E4D7A7E8 /* Sensitive.swift in Sources */ = {isa = PBXBuildFile; fileRef = 424EBBBBA9486922470CA4FB /* Sensitive.swift */; };
+		C80F623528E8C328CDFBB0B9 /* ScriptPolisherTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6002D41F5898444F6F72EFB /* ScriptPolisherTests.swift */; };
 		D2F0ABF9982D023FC344CF12 /* Design.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4EA1AE0888E8BA760EC38980 /* Design.swift */; };
 		D5CFC3D48AAE270BB15CF2AB /* DreamIcons.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4EF873318FDCABE4B414A8AA /* DreamIcons.swift */; };
 		D9AB950B29CC6FA73965E70D /* ScriptEditorViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65E812D1BAD72A6FBFE9A8D /* ScriptEditorViewController.swift */; };
@@ -46,6 +49,7 @@
 		ED0D106E0E9E074678C52D63 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = E1C48105023FFC6A775F344D /* Assets.xcassets */; };
 		F29E44DEC59A64B7B76114E9 /* Prep.swift in Sources */ = {isa = PBXBuildFile; fileRef = 68F62EB45C36AC3CDD0714DC /* Prep.swift */; };
 		F4DDDCB10D3C0B4CFC08EBD4 /* SensitiveViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA52C87A6E5A2F7D651EC26C /* SensitiveViewController.swift */; };
+		FE21A11F24CE04BCDBDDDC0D /* ScriptPolisher.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2EF560CB111D25BD6747D76 /* ScriptPolisher.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -87,9 +91,11 @@
 		622EB0825AA234557EE8D324 /* RendererTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RendererTests.swift; sourceTree = "<group>"; };
 		66453106AAD73959973198E6 /* Pinyin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Pinyin.swift; sourceTree = "<group>"; };
 		68F62EB45C36AC3CDD0714DC /* Prep.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Prep.swift; sourceTree = "<group>"; };
+		6F463A3F4587E4E2B6BECD2C /* PolishUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolishUITests.swift; sourceTree = "<group>"; };
 		8565B49A38977B7AD3DD8E31 /* WindowSizeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowSizeTests.swift; sourceTree = "<group>"; };
 		8E181D1C77995475FB2BF53D /* PrompterTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = PrompterTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		946F421AA5C6C8D2155F9422 /* ScrollMode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScrollMode.swift; sourceTree = "<group>"; };
+		95AD2AB7724352D7FE7F3C5C /* PolishViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolishViewController.swift; sourceTree = "<group>"; };
 		A29DE3B9F96DE3A137C53770 /* PrompterViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrompterViewController.swift; sourceTree = "<group>"; };
 		A413283E8F6F2E80097A96F4 /* ImportTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportTests.swift; sourceTree = "<group>"; };
 		A41BA95115DFED53DF42C48A /* DesignTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DesignTests.swift; sourceTree = "<group>"; };
@@ -101,6 +107,7 @@
 		BD0627020382122D7A4BA75D /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		C13250409AF0B8EC4AC228F5 /* ScriptHistoryStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScriptHistoryStore.swift; sourceTree = "<group>"; };
 		C1F1C3EE2FEA5F40EFAAE167 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
+		C2EF560CB111D25BD6747D76 /* ScriptPolisher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScriptPolisher.swift; sourceTree = "<group>"; };
 		CAAF38515F3DF0AC45FF911E /* SpeechTracker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeechTracker.swift; sourceTree = "<group>"; };
 		D426A9C358011FB0D0889980 /* JourneyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JourneyTests.swift; sourceTree = "<group>"; };
 		D4C872CFFC4839A7DE8EABEE /* FlowUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlowUITests.swift; sourceTree = "<group>"; };
@@ -108,6 +115,7 @@
 		E1C48105023FFC6A775F344D /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		F3472A55D8F62F49A1502382 /* RecordingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingTests.swift; sourceTree = "<group>"; };
 		F56B37F2640C6B8A03D1B55D /* KeepAlive.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeepAlive.swift; sourceTree = "<group>"; };
+		F6002D41F5898444F6F72EFB /* ScriptPolisherTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScriptPolisherTests.swift; sourceTree = "<group>"; };
 		FA52C87A6E5A2F7D651EC26C /* SensitiveViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SensitiveViewController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -134,6 +142,7 @@
 				4C6A12469351B375CA5EA1A9 /* Info.plist */,
 				F56B37F2640C6B8A03D1B55D /* KeepAlive.swift */,
 				1E4836548AC5A677A614FAA7 /* PiPPrompter.swift */,
+				95AD2AB7724352D7FE7F3C5C /* PolishViewController.swift */,
 				A29DE3B9F96DE3A137C53770 /* PrompterViewController.swift */,
 				173A2366BB7093548A23E96F /* PromptRenderer.swift */,
 				C1F1C3EE2FEA5F40EFAAE167 /* SceneDelegate.swift */,
@@ -141,6 +150,7 @@
 				C13250409AF0B8EC4AC228F5 /* ScriptHistoryStore.swift */,
 				1136149E7FF5ACE056D66ED8 /* ScriptHistoryViewController.swift */,
 				0F1F972CB4A0E64EA7087D1C /* ScriptImporter.swift */,
+				C2EF560CB111D25BD6747D76 /* ScriptPolisher.swift */,
 				946F421AA5C6C8D2155F9422 /* ScrollMode.swift */,
 				FA52C87A6E5A2F7D651EC26C /* SensitiveViewController.swift */,
 				1E452E0D5AF366003AAEB61F /* SetupViewController.swift */,
@@ -181,6 +191,7 @@
 				F3472A55D8F62F49A1502382 /* RecordingTests.swift */,
 				622EB0825AA234557EE8D324 /* RendererTests.swift */,
 				2FBEA1A19D0EAA7DF215C561 /* ScriptHistoryTests.swift */,
+				F6002D41F5898444F6F72EFB /* ScriptPolisherTests.swift */,
 			);
 			path = AppTests;
 			sourceTree = "<group>";
@@ -211,6 +222,7 @@
 				A413283E8F6F2E80097A96F4 /* ImportTests.swift */,
 				D426A9C358011FB0D0889980 /* JourneyTests.swift */,
 				51693764F1198B9157913DA9 /* KeyboardTests.swift */,
+				6F463A3F4587E4E2B6BECD2C /* PolishUITests.swift */,
 				1FE646D289C213195112A33F /* SensitiveUITests.swift */,
 				8565B49A38977B7AD3DD8E31 /* WindowSizeTests.swift */,
 			);
@@ -338,6 +350,7 @@
 				A2E85BAEB4BF9409A75CFF38 /* KeepAlive.swift in Sources */,
 				4726E85B228EC4275256F2EB /* PiPPrompter.swift in Sources */,
 				B0641791410DCDBB66345C1B /* Pinyin.swift in Sources */,
+				3CEDC979C0CE32F6332AA7C1 /* PolishViewController.swift in Sources */,
 				F29E44DEC59A64B7B76114E9 /* Prep.swift in Sources */,
 				8F8773C0F8260897554556B6 /* PromptRenderer.swift in Sources */,
 				E206A7FCC4EA537F5CB35294 /* PrompterViewController.swift in Sources */,
@@ -346,6 +359,7 @@
 				EA15FCAEFEE6C3470F9BAAC9 /* ScriptHistoryStore.swift in Sources */,
 				25FE1C5A5DCC23FF4AFCA527 /* ScriptHistoryViewController.swift in Sources */,
 				E9C927DED41301DFC7148F38 /* ScriptImporter.swift in Sources */,
+				FE21A11F24CE04BCDBDDDC0D /* ScriptPolisher.swift in Sources */,
 				04AFAD31A3D962BA78CC4EF9 /* ScrollMode.swift in Sources */,
 				C668D62780B21DA4E4D7A7E8 /* Sensitive.swift in Sources */,
 				8B17797567B4FB456F62920E /* SensitiveLexicon.swift in Sources */,
@@ -366,6 +380,7 @@
 				87A2AD1AC65C3E99EC2A2D2F /* RecordingTests.swift in Sources */,
 				5F9D1E82C52FA48A8BC2E173 /* RendererTests.swift in Sources */,
 				C4B7C6F081AD859119D1F992 /* ScriptHistoryTests.swift in Sources */,
+				C80F623528E8C328CDFBB0B9 /* ScriptPolisherTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -378,6 +393,7 @@
 				7CAB99AD7D30031CADA1F336 /* ImportTests.swift in Sources */,
 				05622E9E15FAD864884DAB7E /* JourneyTests.swift in Sources */,
 				C21AD471E2DD8C98B57430B5 /* KeyboardTests.swift in Sources */,
+				6FB36F1345EACEF9985D6B8B /* PolishUITests.swift in Sources */,
 				787A5253E2148703B6D71717 /* SensitiveUITests.swift in Sources */,
 				DD71080015EA551C8CB3233B /* WindowSizeTests.swift in Sources */,
 			);
