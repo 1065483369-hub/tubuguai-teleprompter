@@ -1,8 +1,10 @@
 # 兔不乖的提词器
 
-一款原生 iOS 提词器，面向需要边录制边看稿、边读边跟读校准的内容创作者。支持 App 内录制，以及通过系统画中画（PiP）悬浮在系统相机之上使用。
+免费、开源的原生 iOS 提词器，面向需要边录制边看稿、边读边跟读校准的内容创作者。支持 App 内录制，以及通过系统画中画（PiP）悬浮在系统相机之上使用。
 
-> 本仓库为个人私有项目，与 PetLive 或任何组织仓库无关联。
+**先看这里：**本仓库提供源码，不是点“Download ZIP”就能在 iPhone 上安装的 App Store 应用。需要一台 Mac、Xcode 和自己的 Apple 账号。第一次使用请按 [iPhone 安装教程](INSTALL.md) 操作；之后可以在 Xcode 中再次运行，或使用安装脚本更新。
+
+App 不收订阅费，也没有付费解锁。使用免费的 Apple Personal Team 自行签名时，描述文件约 7 天到期，届时需重新构建并安装；这属于 Apple 的免费开发账号限制，不是 App 收费。
 
 ## 主要功能
 
@@ -23,18 +25,22 @@
 4. 进入跟读页后，可用“文字”调整字号、行距和透明度；用“左右翻转”“上下翻转”设置镜像，用“镜头翻转”切换前后摄像头。拖动粉色跟读线也能即时调整提词位置。
 5. “上一句 / 开始录制 / 下一句”位于同一行；开始录制后，中央按钮切换为暂停或继续。底部“浮窗”可开启系统 PiP，切到系统相机继续看稿。跟读期间屏幕会自动保持常亮，结束后恢复系统设置。
 
-## 开发环境
+## 安装与开发
 
-- Xcode 15 或更高版本（编译本机智能润色能力需要 Xcode 26 的 Foundation Models SDK；旧版工具链仅构建基础整理）
-- iOS 16 或更高版本的真机（PiP、相机与语音识别需要真机权限）。本机智能润色另需 iOS 26、支持且已启用 Apple Intelligence 的设备；模型不可用时自动改用基础文字整理。
-- Swift Package Manager
+- **普通用户**：阅读 [一步步安装到 iPhone](INSTALL.md)。首次安装需在 Xcode 登录自己的 Apple 账号、选择 **Personal Team**、连接手机并开启开发者模式。
+- **开发者**：工程使用 Xcode 16 项目格式；Xcode 版本还需支持手机当前的 iOS 版本。iOS 26 的手机建议使用 Xcode 26。本机智能润色另需 Xcode 26 的 Foundation Models SDK、iOS 26 和可用的 Apple Intelligence；不满足条件时仅提供基础文字整理。
+- **设备**：iOS 16 或更新版本。PiP、相机和语音识别建议在真机验证。
 
 ```bash
 swift test
 open Prompter.xcodeproj
 ```
 
-在 Xcode 中选择个人开发团队和已连接的 iPhone 后即可运行。请勿使用 PetLive 团队签名本项目。
+如果已在 Xcode 完成首次签名设置，也可用 `DEVELOPMENT_TEAM=你的个人团队ID ./scripts/install-device.sh --check` 先检查设备，再去掉 `--check` 构建、安装和启动。脚本不会自动选择证书或卸载现有 App。
+
+## 开源许可
+
+本项目采用 [GNU GPL v3.0](LICENSE)（SPDX：`GPL-3.0-only`）。你可以免费使用、查看、修改和分发；如果分发修改版，也需遵守 GPLv3 的源码提供与许可要求。
 
 ## 隐私
 
